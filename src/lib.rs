@@ -25,7 +25,7 @@ pub struct Connection {
 #[derive(Debug)]
 pub struct Session {
     name : String,               // session name : mandatory with at least one UTF-8-encoded character
-    title: Option<String>  // session title or short information
+    title: Option<String>        // session title or short information
 }
 
 // Time description
@@ -51,6 +51,9 @@ pub struct Media {
     attrs     : Option<Attrs>
 }
 
+pub type Mediae = Vec<Media>;
+
+
 #[derive(Debug)]
 pub struct SessionDescription {
     version: usize,  // protocol version number, currently only 0
@@ -61,11 +64,11 @@ pub struct SessionDescription {
     phone  : Option<String>,
     connection: Option<Connection>, // connection information—not required if included in all media
     bandwidth : Option<usize>,  // zero or more bandwidth information lines
-    time   : Time,              // One or more time descriptions ("t=" and "r=" lines; see below)
+    time    : Time,             // One or more time descriptions ("t=" and "r=" lines; see below)
     timezone: Option<String>,   // time zone adjustments
     ekey    : Option<String>,   // encryption key
     attrs   : Option<Attrs>,    // zero or more session attribute lines
-    media   : Option<>
+    mediae  : Option<Mediae>,   // Media description, if present
 }
 
 
