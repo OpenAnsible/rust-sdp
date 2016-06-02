@@ -34,7 +34,7 @@ pub struct Time {
     active: Option<usize>,   // time the session is active
     repeat: Option<usize>    // zero or more repeat times
 }
-
+pub type Times = Vec<Time>;
 
 pub type Attr  = String;
 pub type Attrs = Vec<Attr>;
@@ -64,7 +64,7 @@ pub struct SessionDescription {
     phone  : Option<String>,
     connection: Option<Connection>, // connection information—not required if included in all media
     bandwidth : Option<usize>,  // zero or more bandwidth information lines
-    time    : Time,             // One or more time descriptions ("t=" and "r=" lines; see below)
+    times     : Times,          // One or more time descriptions ("t=" and "r=" lines; see below)
     timezone: Option<String>,   // time zone adjustments
     ekey    : Option<String>,   // encryption key
     attrs   : Option<Attrs>,    // zero or more session attribute lines
