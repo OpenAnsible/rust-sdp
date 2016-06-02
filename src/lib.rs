@@ -1,5 +1,6 @@
 use std::fmt;
 use std::str::FromStr;
+use std::string::ToString;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 /// SDP Media Type: application/sdp
@@ -74,7 +75,12 @@ impl SessionDescription {
             ..
         }
     }
+}
 
+impl ToString for SessionDescription {
+    fn to_string(&self) -> String {
+        String::new()
+    }
 }
 
 impl FromStr for SessionDescription {
