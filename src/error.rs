@@ -15,6 +15,7 @@ pub enum Error {
     IpAddress,
     Bandwidth,
     Uri,
-    ConnectionInfo
+    ConnectionInfo,
+    MediaInfo
 }
 

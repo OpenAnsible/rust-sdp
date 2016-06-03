@@ -15,3 +15,13 @@
 // https://tools.ietf.org/html/rfc4566#section-5.6
 // Phone
 // +1 617 555-6011
+
+#[derive(Debug)]
+pub struct Email {
+
+}
+
+#[derive(Debug)]
+pub struct Phone {
+
+}
