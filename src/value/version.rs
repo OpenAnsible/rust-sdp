@@ -1,15 +1,17 @@
 use std::fmt;
 use std::str::FromStr;
 use std::string::ToString;
+use error::Error;
+
 
 #[derive(Clone, Debug)]
 pub enum ProtocolVersion {
-    pub V0
+    V0
 }
 
 #[derive(Clone, Debug)]
 pub enum SessionVersion {
-    pub V0
+    V0
 }
 
 impl ProtocolVersion {
@@ -27,10 +29,14 @@ impl ProtocolVersion {
 }
 
 impl FromStr for ProtocolVersion {
-    fn from_str(pv: &str) -> Option<ProtocolVersion> {
-        match usize::from_str(pv) {
-            Ok(i)  => ProtocolVersion::from_usize(i),
-            Err(_) => None
+    type Err = Error;
+    fn from_str(s: &str) -> Result<ProtocolVersion, Error> {
+        match usize::from_str(s) {
+            Ok(i)  => match ProtocolVersion::from_usize(i) {
+                Some(i) => Ok(i),
+                None    => return Err(Error::ProtocolVersion)
+            },
+            Err(_) => Err(Error::ProtocolVersion)
         }
     }
 }
@@ -49,10 +55,31 @@ impl SessionVersion {
     }
 }
 impl FromStr for SessionVersion {
-    fn from_str(sv: &str) -> Option<SessionVersion> {
-        match usize::from_str(sv) {
-            Ok(i)  => SessionVersion::from_usize(i),
-            Err(_) => None
+    type Err = Error;
+    fn from_str(s: &str) -> Result<SessionVersion, Error> {
+        match usize::from_str(s) {
+            Ok(i)  => match SessionVersion::from_usize(i) {
+                Some(i) => Ok(i),
+                None    => return Err(Error::SessionVersion)
+            },
+            Err(_) => Err(Error::SessionVersion)
+        }
+    }
+}
+
+
+impl ToString for ProtocolVersion {
+    fn to_string(&self) -> String {
+        match *self {
+            ProtocolVersion::V0 => "0".to_string()
+        }
+    }
+}
+
+impl ToString for SessionVersion {
+    fn to_string(&self) -> String {
+        match *self {
+            SessionVersion::V0 => "0".to_string()
         }
     }
 }

@@ -1,105 +1,133 @@
+extern crate regex;
+
+
 use std::fmt;
 use std::str::FromStr;
 use std::string::ToString;
-pub use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+
+use regex::Regex;
+
+use super::{ NetType, AddrType };
+use super::{ ProtocolVersion, SessionVersion };
+
+use error::Error;
 
 // Unicast: 单播, Broadcast: 广播, Multicast: 组播
 
-#[derive(Debug, Clone)]
-pub enum NetType {
-    In,  // Internet
-}
 
 #[derive(Debug, Clone)]
-pub enum Ttl {
-    Some(u8), // MUST be in the range 0-255
-    None
-}
-
-
-#[derive(Debug, Clone)]
-pub struct ConnectionInfomation {
-    
+pub struct ConnectionInfo {
     // Ipv4  <base multicast address>[/<ttl>]/<number of addresses>
     // One address c=<nettype> <addrtype> <connection-address>
     // c=IN IP4 0.0.0.0/127
-    // Multicast addresses
-    // c=IN IP4 224.2.1.1/127/2
-    // c=IN IP4 224.2.1.1/127
-    // c=IN IP4 224.2.1.2/127
-    
-    // Ipv6
-    // c=IN IP6 FF15::101/3
-    // c=IN IP6 FF15::101
-    // c=IN IP6 FF15::102
-    // c=IN IP6 FF15::103
-
     pub nettype : NetType,
-    // addrtype: AddrType,
+    pub addrtype: AddrType,
     pub address : IpAddr,
-    // IPv4 multicast connection address MUST also have a time to live (TTL) value present in addition to the multicast address.
-    // TTL values MUST be in the range 0-255
-    // IPv6 multicast does not use TTL scoping, and hence the TTL value MUST NOT be present for IPv6 multicast.
-    pub ttl     : Ttl,
-    pub number_of_addresses: Option<u8>
+    pub ttl     : u8,
+    pub num     : Option<u8>
 }
 
-
-impl Ttl {
-    pub fn new (ttl: u8) -> Ttl {
-        Ttl::Some(ttl)
-    }
-    pub fn ttl(&self) -> Option<u8> {
-        match *self {
-            Ttl::Some(ref ttl) => Some(ttl.as_ref()),
-            Ttl::None          => None
-        }
-    }
-}
-
-
-impl FromStr for NetType {
-    fn from_str(s: &str) -> Result<NetType, &'static str> {
-        match s.to_lowercase().as_ref() {
-            "internet" | "in" => Ok(NetType::In),
-            _                 => Err("parse net type fail.")
-        }
-    }
-}
-impl ToString for NetType {
+impl ToString for ConnectionInfo {
     fn to_string(&self) -> String {
-        match *self {
-            NetType::In => "IN".to_string()
+        let connection_info = self.nettype.to_string() + " "
+                            + self.addrtype.to_string().as_ref() + " "
+                            + self.address.to_string().as_ref() + "/"
+                            + self.ttl.to_string().as_ref();
+        match self.num {
+            Some(num) => connection_info + "/" + num.to_string().as_ref(),
+            None      => connection_info
         }
     }
 }
+impl FromStr for ConnectionInfo {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<ConnectionInfo, Error> {
+        // c=IN IP4 0.0.0.0/127/3
+        let re  = match Regex::new(r"(IN)\s(IP\d)\s(\d+.\d+.\d+.\d+)"){
+            Ok(re) => re,
+            Err(e) => {
+                println!("[Regex] {:?}", e);
+                return Err(Error::ConnectionInfo);
+            }
+        };
+        let cap = re.captures(s).unwrap();
+        let nettype = match cap.at(1) {
+            Some(nettype) => {
+                match NetType::from_str(nettype) {
+                    Ok(nettype) => nettype,
+                    Err(_)      => return Err(Error::NetType)
+                }
+            },
+            None             => return Err(Error::NetType)
+        };
+        let addrtype = match cap.at(2) {
+            Some(addrtype)   => match AddrType::from_str(addrtype) {
+                Ok(addrtype) => addrtype,
+                Err(_)       => return Err(Error::AddrType)
+            },
+            None             => return Err(Error::AddrType)
+        };
+        let address = match cap.at(3) {
+            Some(address)    => {
+                match IpAddr::from_str(address) {
+                    Ok(address) => address,
+                    Err(_)      => return Err(Error::IpAddress)
+                }
+            },
+            None                => return Err(Error::IpAddress)
+        };
+        // check addrtype <-> address
+        match addrtype {
+            AddrType::Ip4 => {
+                match address {
+                    IpAddr::V6(_) => return Err(Error::AddrType),
+                    IpAddr::V4(_) => {  }
+                };
+            },
+            AddrType::Ip6 => {
+                match address {
+                    IpAddr::V4(_) => return Err(Error::AddrType),
+                    IpAddr::V6(_) => {  }
+                };
+            }
+        }
+        // parse ttl, number of address
+        let v: Vec<&str> = s.split('/').collect();
+        let mut ttl = 60u8;
+        let mut num = None;
 
-
-impl ConnectionInfomation {
-    pub fn new()   -> Result<ConnectionInfomation, &'static str> {
-        Err("TODO.")
-    }
-    pub fn parse() -> Result<ConnectionInfomation, &'static str> {
-        Err("TODO.")
-    }
-    // pub fn is_multicast(&self) -> bool {
-    //     false
-    // }
-    // pub fn is_broadcast(&self) -> bool {
-    //     false
-    // }
-
-
-}
-
-impl ToString for ConnectionInfomation {
-    fn to_string(&self) -> String {
-        "TODO".to_string()
-    }
-}
-impl FromStr for ConnectionInfomation {
-    fn from_str(s: &str) -> Result<ConnectionInfomation, &'static str> {
-        Err("TODO.")
+        if v.len() ==  2 {
+            ttl = match u8::from_str(v[1]){
+                Ok(i)  => i,
+                Err(_) => {
+                    println!("WARN: TTL Must be 0-255");
+                    60u8
+                }
+            };
+        } else if v.len() == 3 {
+            ttl = match u8::from_str(v[1]){
+                Ok(i)  => i,
+                Err(_) => {
+                    println!("WARN: TTL Must be 0-255");
+                    60u8
+                }
+            };
+            num = match u8::from_str(v[2]){
+                Ok(i)  => Some(i),
+                Err(_) => {
+                    println!("WARN: TTL Must be 0-255");
+                    None
+                }
+            };
+        }
+        Ok(ConnectionInfo{
+            nettype : nettype,
+            addrtype: addrtype,
+            address : address,
+            ttl: ttl,
+            num: num
+        })
     }
 }
 

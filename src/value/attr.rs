@@ -1,5 +1,5 @@
 
 #[derive(Debug, Clone)]
-pub struct Attrs {
+pub struct Attr {
 
 }

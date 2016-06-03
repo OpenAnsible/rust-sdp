@@ -1,58 +1,71 @@
+extern crate regex;
+
 use std::fmt;
 use std::str::FromStr;
 use std::string::ToString;
+
+use regex::Regex;
+
+use error::Error;
+
 // https://tools.ietf.org/html/rfc4566#section-5.8
 
 #[derive(Debug, Clone)]
 pub struct Bandwidth {
-    // b=<bwtype>:<bandwidth>
-    // b=X-YZ:128
-    // Use of the "X-" prefix is NOT RECOMMENDED: instead new modifiers
-    // SHOULD be registered with IANA in the standard namespace. 
-    pub ct: String,
-    pub bandwidth: usize
+    pub prefix: String,
+    pub ct    : String,
+    pub size  : usize
 }
 
-impl Bandwidth {
-    pub fn new (ct: String, bandwidth: usize) -> Bandwidth {
-        Bandwidth { ct: ct, bandwidth: bandwidth }
-    }
-}
 
 impl ToString for Bandwidth {
     fn to_string(&self) -> String {
-        let bw = "b=".to_string() + self.ct.as_ref() + ":" + self.bandwidth as str;
-        bw
+        self.prefix.clone() + "-" + self.ct.as_ref() + ":" + self.size.to_string().as_ref()
     }
 }
 
-impl FromStr for NetType {
-    fn from_str(s: &str) -> Result<Bandwidth, &'static str> {
-        let parts = s.splitn(2, '=').collect::<Vec<&str>>();
-        if parts.len() != 2 {
-            return Err("parse fail.");
-        }
-        let key   = parts[0];
-        let value = parts[1];
+impl FromStr for Bandwidth {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Bandwidth, Error> {
+        // b=<bwtype>:<bandwidth>
+        // b=X-YZ:128
+        // Use of the "X-" prefix is NOT RECOMMENDED: instead new modifiers
+        // SHOULD be registered with IANA in the standard namespace. 
+        let re  = match Regex::new(r"(\S+)-(\S+):(\d+)") {
+            Ok(re) => re,
+            Err(e) => {
+                println!("[Regex] {:?}", e);
+                return Err(Error::Bandwidth);
+            }
+        };
+        let cap = re.captures(s).unwrap();
+        let prefix = cap.at(0);
+        let ct     = cap.at(1);
 
-        match key {
-            "v" => {
-                if let Ok(v) = FromStr::from_str(value) {
-                    println!("v => {}", v);
-                    Some(SdpLine::ProtocolVersion(v))
-                } else {
-                    None
+        let size: usize = match cap.at(2) {
+            Some(size) => {
+                match usize::from_str(size){
+                    Ok(size) => size,
+                    Err(_)   => {
+                        println!("ERROR: bandwidth.size parse fail. {:?}", size);
+                        return Err(Error::Bandwidth);
+                    }
                 }
             },
-            "o" => {
-                if let Some(o) = parse_origin(value) {
-                    //println!("o => {}", o);
-                    Some(SdpLine::Origin(o))
-                } else {
-                    None
-                }
-            },
-            _ => None
+            None       => {
+                println!("ERROR: bandwidth.size parse fail. ");
+                return Err(Error::Bandwidth);
+            }
+        };
+        
+        if prefix.is_some() && ct.is_some() {
+            Ok(Bandwidth {
+                prefix: prefix.unwrap().to_string(),
+                ct    : ct.unwrap().to_string(),
+                size  : size
+            })
+        } else {
+            return Err(Error::Bandwidth);
         }
     }
 }

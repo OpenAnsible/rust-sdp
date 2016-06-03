@@ -1,28 +1,30 @@
 use std::fmt;
 use std::str::FromStr;
 use std::string::ToString;
+// use std::error::Error;
+use error::Error;
 
 // SDP Key
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Key {
     // Session Description
-    pub v,
-    pub o,
-    pub s,
-    pub i,
-    pub u,
-    pub e,
-    pub p,
-    pub c,
-    pub b,
-    pub z,
-    pub k,
-    pub a,
+    v,
+    o,
+    s,
+    i,
+    u,
+    e,
+    p,
+    c,
+    b,
+    z,
+    k,
+    a,
     // Time Description
-    pub t,
-    pub r,
+    t,
+    r,
     // Media Description
-    pub m,
+    m,
 }
 
 impl ToString for Key {
@@ -48,24 +50,25 @@ impl ToString for Key {
 }
 
 impl FromStr for Key {
-    fn from_str(s: &str) -> Option<Key> {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Key, Error> {
         match s.to_lowercase().as_ref() {
-            "v" => Some(Key::v),
-            "o" => Some(Key::o),
-            "s" => Some(Key::s),
-            "i" => Some(Key::i),
-            "u" => Some(Key::u),
-            "e" => Some(Key::e),
-            "p" => Some(Key::p),
-            "c" => Some(Key::c),
-            "b" => Some(Key::b),
-            "z" => Some(Key::z),
-            "k" => Some(Key::k),
-            "a" => Some(Key::a),
-            "t" => Some(Key::t),
-            "r" => Some(Key::r),
-            "m" => Some(Key::m),
-            _   => None
+            "v" => Ok(Key::v),
+            "o" => Ok(Key::o),
+            "s" => Ok(Key::s),
+            "i" => Ok(Key::i),
+            "u" => Ok(Key::u),
+            "e" => Ok(Key::e),
+            "p" => Ok(Key::p),
+            "c" => Ok(Key::c),
+            "b" => Ok(Key::b),
+            "z" => Ok(Key::z),
+            "k" => Ok(Key::k),
+            "a" => Ok(Key::a),
+            "t" => Ok(Key::t),
+            "r" => Ok(Key::r),
+            "m" => Ok(Key::m),
+            _   => Err(Error::Key)
         }
     }
 }
