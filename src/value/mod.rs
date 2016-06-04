@@ -92,7 +92,7 @@ pub enum Value {
     c(Option<ConnectionInfo>),   // connection information -- not required if included in all media
     b(Option<Bandwidth>),// zero or more bandwidth information lines
     z(TimeZone),         // time zone adjustments
-    k(Option<String>),   // encryption key
+    k(Option<String>),   // encryption key, https://tools.ietf.org/html/rfc4566#section-5.12
     a(Attr),             // zero or more session attribute lines
     // Time Description
     t(usize),           // time the session is active
