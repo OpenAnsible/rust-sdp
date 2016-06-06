@@ -1,4 +1,4 @@
-Rust SDP(Session Description Protocol) Lib
+Rust SDP(Session Description Protocol) Library
 ===================
 
 :Date: 06/02 2016
