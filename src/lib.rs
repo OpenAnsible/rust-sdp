@@ -164,18 +164,17 @@ impl FromStr for SessionDescription {
 //     }
 // }
 
-fn main (){
-        let sdp_string = SDP_DEMO;
-        println!("{}", sdp_string);
-        println!("=============================================");
-        let s = SessionDescription::from_str(sdp_string);
-        match s {
-            Ok(s)  => {
-                println!("{}", s.to_string() );
-            },
-            Err(_) => {
-                println!("parse error.");
-            }
-        }
-        
-    }
+// fn main (){
+//         let sdp_string = SDP_DEMO;
+//         println!("{}", sdp_string);
+//         println!("=============================================");
+//         let s = SessionDescription::from_str(sdp_string);
+//         match s {
+//             Ok(s)  => {
+//                 println!("{}", s.to_string() );
+//             },
+//             Err(_) => {
+//                 println!("parse error.");
+//             }
+//         }
+// }

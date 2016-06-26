@@ -1,11 +1,21 @@
 Rust SDP(Session Description Protocol) Library
-===================
+====================================================
 
 :Date: 06/02 2016
 
 
 .. contents::
 
+介绍
+---------
+Rust SDP(Session Description Protocol) Library.
+
+`sdp <https://crates.io/crates/sdp>`_ on crates.io.
+
+用例
+---------
+
+TODO ....
 
 
 参考

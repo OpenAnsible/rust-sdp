@@ -2,11 +2,21 @@
 name = "sdp"
 version = "0.1.0"
 authors = ["Luo <gnulinux@126.com>"]
+keywords = [ "protocol", "rtp", "sdp", "Session-Description" ]
+
+homepage    = "https://github.com/OpenAnsible/rust-sdp"
+description = "Session Description Protocol(SDP) Library"
+repository  = "https://github.com/OpenAnsible/rust-sdp"
+license     = "GPL-3.0"
+readme      = "README.rst"
+
+[lib]
+name = "sdp"
+path = "src/lib.rs"
 
 [dependencies]
-regex = "*"
+regex = "0.1"
+url   = "1.1"
 
-[dependencies.url]
-git = "https://github.com/servo/rust-url"
-# features = ["query_encoding"]
+
 
